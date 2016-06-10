@@ -1,0 +1,118 @@
+#cloud-config
+write_files:
+  - path: /etc/kubernetes/ssl/ca.pem
+    encoding: base64
+    content: ${base64encode(ca_pem)}
+
+  - path: /etc/kubernetes/ssl/apiserver.pem
+    encoding: base64
+    content: ${base64encode(apiserver_pem)}
+
+  - path: /etc/kubernetes/ssl/apiserver-key.pem
+    encoding: base64
+    content: ${base64encode(apiserverkey_pem)}
+  - path: /etc/environment
+    content: |
+      COREOS_PRIVATE_IPV4=$private_ipv4
+      COREOS_PUBLIC_IPV4=$public_ipv4
+      K8S_VER=${kubernetes_ver}
+  - path: /etc/flannel/options.env
+    content: |
+      FLANNELD_IFACE=$private_ipv4
+      FLANNELD_ETCD_ENDPOINTS=http://$private_ipv4:2380
+
+coreos:
+  update:
+    reboot-strategy: "off"
+  flannel:
+    interface: $private_ipv4
+    etcd_endpoints: http://$private_ipv4:2379
+  fleet:
+    metadata: "role=services,cabinet=one"
+  etcd2:
+    name: controller
+    advertise-client-urls: http://$private_ipv4:2379
+    initial-advertise-peer-urls: http://$private_ipv4:2380
+    listen-client-urls: http://0.0.0.0:2379
+    listen-peer-urls: http://0.0.0.0:2380
+    initial-cluster: controller=http://$private_ipv4:2380
+  units:
+    - name: etcd2.service
+      command: start
+      drop-ins:
+        - name: 40-listen-address.conf
+          content: |
+            [Unit]
+            Environment=ETCD_LISTEN_CLIENT_URLS=http://0.0.0.0:2379
+            Environment=ETCD_ADVERTISE_CLIENT_URLS=http://$public_ipv4:2379
+    - name: docker.service
+      drop-ins:
+        - name: 40-ExecStartPre-symlink.conf
+          content: |
+            [Service]
+            ExecStartPre=/usr/bin/ln -sf /etc/flannel/options.env /run/flannel/options.env
+        - name: 40-flannel.conf
+          content: |
+            [Unit]
+            Requires=flanneld.service
+            After=flanneld.service
+
+    - name: flanneld.service
+      command: start
+      drop-ins:
+        - name: 10-etcd.conf
+          content: |
+            [Service]
+            ExecStartPre=/usr/bin/etcdctl set /coreos.com/network/config '{ "Network": "10.0.0.0/16" }'
+    - name: kubelet.service
+      command: start
+      enable: true
+      content: |
+        [Service]
+        Environment=KUBELET_VERSION=v1.2.3_coreos.0
+        Environment=KUBELET_ACI=quay.io/coreos/hyperkube
+        Environment="RKT_OPTS=--volume dns,kind=host,source=/etc/resolv.conf --mount volume=dns,target=/etc/resolv.conf"
+        ExecStartPre=/usr/bin/mkdir -p /etc/kubernetes/manifests
+        ExecStart=/usr/lib/coreos/kubelet-wrapper \
+        --api-servers=http://127.0.0.1:8080 \
+        --network-plugin-dir=/etc/kubernetes/cni/net.d \
+        --network-plugin= \
+        --register-node=true \
+        --allow-privileged=true \
+        --config=/etc/kubernetes/manifests \
+        --cluster_dns=10.3.0.10 \
+        --cluster_domain=cluster.local
+        Restart=always
+        RestartSec=10
+
+        [Install]
+        WantedBy=multi-user.target
+
+    - name: calico-node.service
+      command: start
+      enable: false
+      content: |
+        [Unit]
+        Description=Calico per-host agent
+        Requires=network-online.target
+        After=network-online.target
+
+        [Service]
+        Slice=machine.slice
+        Environment=CALICO_DISABLE_FILE_LOGGING=true
+        Environment=HOSTNAME=$private_ipv4
+        Environment=IP=$private_ipv4
+        Environment=FELIX_FELIXHOSTNAME=$private_ipv4
+        Environment=CALICO_NETWORKING=false
+        Environment=NO_DEFAULT_POOLS=true
+        Environment=ETCD_ENDPOINTS=http://$private_ipv4:2379
+        ExecStart=/usr/bin/rkt run --inherit-env --stage1-from-dir=stage1-fly.aci \
+        --volume=modules,kind=host,source=/lib/modules,readOnly=false \
+        --mount=volume=modules,target=/lib/modules \
+        --trust-keys-from-https quay.io/calico/node:v0.19.0
+        KillMode=mixed
+        Restart=always
+        TimeoutStartSec=0
+
+        [Install]
+        WantedBy=multi-user.target
