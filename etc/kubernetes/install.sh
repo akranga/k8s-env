@@ -14,7 +14,7 @@ function render_template() {
   sed -e "s|$private_ipv4|$COREOS_PRIVATE_IPV4|" \ 
       -e "s|$public_ipv4|$COREOS_PUBLIC_IPV4|" \
       -e "s|${ADVERTISE_IP}|$COREOS_PUBLIC_IPV4|" \
-      -e "s|${ETCD_ENDPOINTS}|http://$COREOS_PUBLIC_IPV4:2379|" \
+      -e "s|${ETCD_ENDPOINTS}|http://$COREOS_PRIVATE_IPV4:2379|" \
       -e "s|${K8S_VER}|$K8S_VER|" \
       -i $1
 }
@@ -40,3 +40,7 @@ deploy_manifest "kube-scheduler.yaml"
 deploy_manifest "policy-agent.yaml"
 deploy_service  "calico-node.service"
 deploy_to_dir   "10-calico.conf" "/etc/kubernetes/cni/net.d"
+
+systemctl daemon-reload
+# systemctl start kubelet
+# systemctl start calico-node
