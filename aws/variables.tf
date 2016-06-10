@@ -25,3 +25,8 @@ variable "public_subnet_cidr" {
 variable "key_pair" {
 	type    = "string"
 }
+
+variable "kubernetes_version" {
+	type    = "string"
+	default = "v1.2.4_coreos.1"
+}

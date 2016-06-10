@@ -40,7 +40,7 @@ resource "template_file" "cloud_config" {
     	apiserverkey_pem  = "${file("${path.cwd}/${var.apiserverkey_pem}")}"
 #    	pod_cidr		  = "${var.pod_cidr}"
 #    	kubelet_wrapper   = "${base64encode(file("${path.cwd}/${var.kubelet_wrapper}"))}"
-    	kubernetes_ver    = "v1.2.3_coreos.0"
+    	kubernetes_ver    = "${kubernets_version}"
 #        region         = "${var.region}"
 #        cluster_props  = "${base64encode( template_file.cluster_props.rendered )}"
     }
