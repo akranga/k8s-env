@@ -1,0 +1,60 @@
+[Service]
+ExecStartPre=/usr/bin/mkdir -p /etc/kubernetes/manifests
+
+Environment=KUBELET_VERSION=v1.2.3_coreos.0
+Environment=KUBELET_ACI=quay.io/coreos/hyperkube
+Environment="RKT_OPTS=--volume dns,kind=host,source=/etc/resolv.conf --mount vns,target=/etc/resolv.conf"
+Environment=KUBELET_VERSION=${K8S_VER}
+ExecStart=/usr/lib/coreos/kubelet-wrapper \
+  --api-servers=http://127.0.0.1:8080 \
+  --network-plugin-dir=/etc/kubernetes/cni/net.d \
+  --network-plugin=${NETWORK_PLUGIN} \
+  --allow-privileged=true \
+  --config=/etc/kubernetes/manifests \
+  --hostname-override=${ADVERTISE_IP} \
+  --cluster-dns=${DNS_SERVICE_IP} \
+  --cluster-domain=cluster.local
+Restart=always
+RestartSec=10
+[Install]
+WantedBy=multi-user.target
+
+
+
+        ExecStart=/usr/lib/coreos/kubelet-wrapper \
+        --api-servers=http://$public_ipv4:8080 \
+        --network-plugin-dir=/etc/kubernetes/cni/net.d \
+        --network-plugin= \
+        --register-node=true \
+        --allow-privileged=true \
+        --config=/etc/kubernetes/manifests \
+        --cluster_dns=10.3.0.10 \
+        --cluster_domain=cluster.local
+        Restart=always
+        RestartSec=10
+
+        [Install]
+        WantedBy=multi-user.target
+
+
+
+
+export ARCH=amd64
+docker run -d \
+    --volume=/:/rootfs:ro \
+    --volume=/sys:/sys:rw \
+    --volume=/var/lib/docker/:/var/lib/docker:rw \
+    --volume=/var/lib/kubelet/:/var/lib/kubelet:rw \
+    --volume=/var/run:/var/run:rw \
+    --net=host \
+    --pid=host \
+    --privileged \
+    gcr.io/google_containers/hyperkube-${ARCH}:${K8S_VERSION} \
+    /hyperkube kubelet \
+        --containerized \
+        --hostname-override=127.0.0.1 \
+        --api-servers=http://localhost:8080 \
+        --config=/etc/kubernetes/manifests \
+        --cluster-dns=10.0.0.10 \
+        --cluster-domain=cluster.local \
+        --allow-privileged --v=2
