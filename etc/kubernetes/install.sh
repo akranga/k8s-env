@@ -72,8 +72,11 @@ systemctl start kubelet
 
 wait_for_url "http://127.0.0.1:8080/version"
 
-create_namespace "kube-system"
-create_namespace "calico-system"
+curl -H "Content-Type: application/json" -XPOST -d'{"apiVersion":"v1","kind":"Namespace","metadata":{"name":"kube-system"}}' "http://127.0.0.1:8080/api/v1/namespaces"
+curl -H "Content-Type: application/json" -XPOST -d'{"apiVersion":"v1","kind":"Namespace","metadata":{"name":"calico-system"}}' "http://127.0.0.1:8080/api/v1/namespaces"
+
+#create_namespace "kube-system"
+#create_namespace "calico-system"
 curl -H "Content-Type: application/json" -XPOST http://127.0.0.1:8080/apis/extensions/v1beta1/namespaces/default/thirdpartyresources --data-binary @- <<BODY
 {
   "kind": "ThirdPartyResource",
@@ -90,12 +93,15 @@ curl -H "Content-Type: application/json" -XPOST http://127.0.0.1:8080/apis/exten
 }
 BODY
 
-# systemctl start calico-node
+systemctl start calico-node
 
-curl -o https://storage.googleapis.com/kubernetes-release/release/v1.2.4/bin/linux/amd64/kubectl
+curl -o /opt/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/v1.2.4/bin/linux/amd64/kubectl
 chmod +x /opt/bin/kubectl
 kubectl config set-cluster default-cluster --server=https://localhost:8080 --certificate-authority=/etc/kubernetes/ssl/ca.pem
-#kubectl config set-credentials default-admin --certificate-authority=/etc/kubernetes/ssl/ca.pem --client-key=/etc/kubernetes/ssl/admin-key.pem --client-certificate=/etc/kubernetes/ssl/admin.pem
-#kubectl config set-context default-system --cluster=default-cluster --user=default-admin
+
+kubectl config set-credentials anton  --username=john --password=secret1
+
+kubectl config set-credentials default-admin --certificate-authority=/etc/kubernetes/ssl/ca.pem --client-key=/etc/kubernetes/ssl/admin-key.pem --client-certificate=/etc/kubernetes/ssl/admin.pem
+kubectl config set-context default-system --cluster=default-cluster --user=default-admin
 
 
