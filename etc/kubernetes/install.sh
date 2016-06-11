@@ -9,7 +9,6 @@ done
 DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
 source "/etc/environment"
-source "/etc/flannel/options.env"
 
 function render_template() {
   sed -e "s|\${K8S_VER}|$K8S_VER|" \
