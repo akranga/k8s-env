@@ -68,7 +68,7 @@ variable "apiserverkey_pem" {
 	default = "credentials/apiserver-key.pem"
 }
 
-variable "pod_cidr" {
-	type 	= "string"
-	default = "10.1.0.0/16"
+variable "instance_profile" {
+	type    = "string"
+	default = ""
 }

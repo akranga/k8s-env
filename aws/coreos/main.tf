@@ -10,6 +10,7 @@ resource "aws_instance" "main" {
     user_data = "${template_file.cloud_config.rendered}"
 #    user_data = "${file("${path.cwd}/${var.cloud_config}")}"
 	security_groups = ["${split(",", "${var.security_groups}")}"]
+	iam_instance_profile  = "${var.instance_profile}"
 
     associate_public_ip_address = true
 
@@ -40,7 +41,7 @@ resource "template_file" "cloud_config" {
     	apiserverkey_pem  = "${file("${path.cwd}/${var.apiserverkey_pem}")}"
 #    	pod_cidr		  = "${var.pod_cidr}"
 #    	kubelet_wrapper   = "${base64encode(file("${path.cwd}/${var.kubelet_wrapper}"))}"
-    	kubernetes_ver    = "${kubernets_version}"
+    	kubernetes_ver    = "v1.2.3_coreos.0"
 #        region         = "${var.region}"
 #        cluster_props  = "${base64encode( template_file.cluster_props.rendered )}"
     }
