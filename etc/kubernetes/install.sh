@@ -69,6 +69,8 @@ deploy_script   "install-kube-system.sh"
 
 systemctl daemon-reload
 systemctl start kubelet
+systemctl start calico-node
+systemctl enable calico-node
 
 wait_for_url "http://127.0.0.1:8080/version"
 
@@ -92,8 +94,6 @@ curl -H "Content-Type: application/json" -XPOST http://127.0.0.1:8080/apis/exten
   ]
 }
 BODY
-
-systemctl start calico-node
 
 curl -o /opt/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/v1.2.4/bin/linux/amd64/kubectl
 chmod +x /opt/bin/kubectl
