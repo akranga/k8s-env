@@ -22,6 +22,13 @@ write_files:
       K8S_SERVICE_IP=10.3.0.1
       DNS_SERVICE_IP=10.3.0.10
       NETWORK_PLUGIN=
+      export COREOS_PRIVATE_IPV4 
+      export COREOS_PUBLIC_IPV4 
+      export K8S_VER POD_NETWORK 
+      export SERVICE_IP_RANGE 
+      export K8S_SERVICE_IP 
+      exprot DNS_SERVICE_IP 
+      export NETWORK_PLUGIN
 
   - path: /etc/flannel/options.env
     content: |
