@@ -17,9 +17,6 @@ destroy:
 	terraform plan -destroy -var-file terraform.tfvars -out terraform.tfplan $(CLOUD)/
 	terraform apply terraform.tfplan
 
-clean: compress
-	gzip user_data/cloud-config.yaml user_data/cloud-config.yaml.gz
-
 clean: destroy
 	rm -f terraform.tfplan
 	rm -f terraform.tfstate
