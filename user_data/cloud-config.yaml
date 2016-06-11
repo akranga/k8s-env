@@ -110,6 +110,7 @@ coreos:
         --network-plugin-dir=/etc/kubernetes/cni/net.d \
         --network-plugin= \
         --register-node=true \
+        --register-schedulable=true \
         --allow-privileged=true \
         --config=/etc/kubernetes/manifests \
         --cluster_dns=10.3.0.10 \

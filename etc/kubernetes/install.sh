@@ -92,9 +92,8 @@ BODY
 
 # systemctl start calico-node
 
-curl -O https://storage.googleapis.com/kubernetes-release/release/v1.2.4/bin/darwin/amd64/kubectl
-chmod +x kubectl
-mv kubectl /opt/bin/kubectl | true
+curl -o https://storage.googleapis.com/kubernetes-release/release/v1.2.4/bin/linux/amd64/kubectl
+chmod +x /opt/bin/kubectl
 kubectl config set-cluster default-cluster --server=https://localhost:8080 --certificate-authority=/etc/kubernetes/ssl/ca.pem
 #kubectl config set-credentials default-admin --certificate-authority=/etc/kubernetes/ssl/ca.pem --client-key=/etc/kubernetes/ssl/admin-key.pem --client-certificate=/etc/kubernetes/ssl/admin.pem
 #kubectl config set-context default-system --cluster=default-cluster --user=default-admin
