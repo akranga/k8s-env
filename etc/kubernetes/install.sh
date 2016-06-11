@@ -1,7 +1,8 @@
 #!/bin/bash -xe
-
-docker stop $(docker ps -a -q)
-docker rm $(docker ps -a -q)
+(
+  docker stop $(docker ps -a -q)
+  docker rm $(docker ps -a -q)
+) | true
 
 SOURCE="${BASH_SOURCE[0]}"
 while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink

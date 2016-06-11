@@ -1,5 +1,4 @@
 #!/bin/bash
-
 user=$1
 group=$1
 
