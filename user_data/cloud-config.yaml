@@ -11,6 +11,14 @@ write_files:
   - path: /etc/kubernetes/ssl/apiserver-key.pem
     encoding: base64
     content: ${base64encode(apiserverkey_pem)}
+
+  - path: /etc/kubernetes/ssl/admin.pem
+    encoding: base64
+    content: ${base64encode(admin_pem)}
+
+  - path: /etc/kubernetes/ssl/admin-key.pem
+    encoding: base64
+    content: ${base64encode(adminkey_pem)}
     
   - path: /etc/environment
     content: |
@@ -27,7 +35,7 @@ write_files:
       export K8S_VER POD_NETWORK 
       export SERVICE_IP_RANGE 
       export K8S_SERVICE_IP 
-      exprot DNS_SERVICE_IP 
+      export DNS_SERVICE_IP 
       export NETWORK_PLUGIN
 
   - path: /etc/flannel/options.env

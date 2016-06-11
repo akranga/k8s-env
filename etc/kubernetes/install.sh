@@ -22,7 +22,7 @@ function render_template() {
 
 function wait_for_url() {
   echo wait for $1 be up and running
-  until $(curl --output /dev/null --silent --head --fail $1); do
+  until $(curl --output /dev/null --silent --head $1); do
     printf '.'
     sleep 5
   done
@@ -91,3 +91,12 @@ curl -H "Content-Type: application/json" -XPOST http://127.0.0.1:8080/apis/exten
 BODY
 
 # systemctl start calico-node
+
+curl -O https://storage.googleapis.com/kubernetes-release/release/v1.2.4/bin/darwin/amd64/kubectl
+chmod +x kubectl
+mv kubectl /opt/bin/kubectl | true
+kubectl config set-cluster default-cluster --server=https://localhost:8080 --certificate-authority=/etc/kubernetes/ssl/ca.pem
+#kubectl config set-credentials default-admin --certificate-authority=/etc/kubernetes/ssl/ca.pem --client-key=/etc/kubernetes/ssl/admin-key.pem --client-certificate=/etc/kubernetes/ssl/admin.pem
+#kubectl config set-context default-system --cluster=default-cluster --user=default-admin
+
+

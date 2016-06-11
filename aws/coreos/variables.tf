@@ -68,6 +68,16 @@ variable "apiserverkey_pem" {
 	default = "credentials/apiserver-key.pem"
 }
 
+variable "admin_pem" {
+	type    = "string"
+	default = "credentials/admin.pem"
+}
+
+variable "adminkey_pem" {
+	type    = "string"
+	default = "credentials/admin-key.pem"
+}
+
 variable "instance_profile" {
 	type    = "string"
 	default = ""
