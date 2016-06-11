@@ -19,7 +19,37 @@ write_files:
   - path: /etc/kubernetes/ssl/admin-key.pem
     encoding: base64
     content: ${base64encode(adminkey_pem)}
-    
+
+  - path: /etc/motd.d/k8s.conf
+    content: |
+      Hi, and welcome!
+
+      This is your workstation for kubernetes workshop. I can see you successfully logged in. If you accidentlhy
+      break it, this shouldn't be a problem. We will jsut provision a new one for you!
+
+      Before we start let's install kubernetes. Run this magic script:
+
+        install-kubernetes
+
+      Now before you need to obtain workhop matherials. Just clone it from github by entering following command:
+
+        git clone https://github.com/akranga/kube-workshop.git
+        cd kube-workshop
+
+
+      Good luck! And have fun!
+
+
+  - path: /opt/bin/install-kubernetes
+    owner: root
+    permissions: 0755
+    content: |
+      #/bin/bash
+      mkdir -p ~/.kube
+      /usr/bin/git clone https://github.com/akranga/k8s-env.git ~/.kube/k8s-env | true
+      sudo ~/.kube/k8s-env/etc/kubernetes/install.sh
+      sudo ~/.kube/k8s-env/etc/kubernetes/export-kube-config.sh core
+
   - path: /etc/environment
     content: |
       COREOS_PRIVATE_IPV4=$private_ipv4
@@ -38,19 +68,10 @@ write_files:
       export DNS_SERVICE_IP 
       export NETWORK_PLUGIN
 
-  - path: /etc/flannel/options.env
-    content: |
-      FLANNELD_IFACE=$private_ipv4
-      FLANNELD_ETCD_ENDPOINTS=http://$private_ipv4:2380
-
-  - path: /opt/bin/aws
-    owner: root
-    permissions: 0755
-    content: |
-      #!/bin/bash
-      pwd=$(pwd)
-      docker=/usr/bin/docker
-      $docker run -v $pwd:/workspace -v /etc/kubernetes/ssl:/etc/kubernetes/ssl -w /workspace --rm -t -i quay.io/coreos/awscli aws "$@"
+#  - path: /etc/flannel/options.env
+#    content: |
+#      FLANNELD_IFACE=$private_ipv4
+#      FLANNELD_ETCD_ENDPOINTS=http://$private_ipv4:2380
 
 coreos:
   update:
@@ -68,6 +89,7 @@ coreos:
     listen-peer-urls: http://0.0.0.0:2380
     initial-cluster: controller=http://$private_ipv4:2380
   units:
+
     - name: etcd2.service
       command: start
       drop-ins:
@@ -87,6 +109,10 @@ coreos:
             [Unit]
             Requires=flanneld.service
             After=flanneld.service
+        - name: "50-insecure-registry.conf"
+          content: |
+            [Service]
+            Environment=DOCKER_OPTS='--insecure-registry="0.0.0.0/0" --dns="8.8.8.8"'
 
     - name: flanneld.service
       command: start
@@ -121,31 +147,6 @@ coreos:
         [Install]
         WantedBy=multi-user.target
 
-    - name: calico-node.service
-      command: start
-      enable: false
-      content: |
-        [Unit]
-        Description=Calico per-host agent
-        Requires=network-online.target
-        After=network-online.target
 
-        [Service]
-        Slice=machine.slice
-        Environment=CALICO_DISABLE_FILE_LOGGING=true
-        Environment=HOSTNAME=$private_ipv4
-        Environment=IP=$private_ipv4
-        Environment=FELIX_FELIXHOSTNAME=$private_ipv4
-        Environment=CALICO_NETWORKING=false
-        Environment=NO_DEFAULT_POOLS=true
-        Environment=ETCD_ENDPOINTS=http://$private_ipv4:2379
-        ExecStart=/usr/bin/rkt run --inherit-env --stage1-from-dir=stage1-fly.aci \
-        --volume=modules,kind=host,source=/lib/modules,readOnly=false \
-        --mount=volume=modules,target=/lib/modules \
-        --trust-keys-from-https quay.io/calico/node:v0.19.0
-        KillMode=mixed
-        Restart=always
-        TimeoutStartSec=0
 
-        [Install]
-        WantedBy=multi-user.target
+
