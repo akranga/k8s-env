@@ -66,6 +66,8 @@ deploy_manifest "kube-proxy.yaml"
 deploy_manifest "kube-controller-manager.yaml"
 deploy_manifest "kube-scheduler.yaml"
 deploy_manifest "policy-agent.yaml"
+deploy_manifest "kube-dns-svc.json"
+deploy_manifest "kube-dns-rc.json"
 deploy_service  "calico-node.service"
 deploy_to_dir   "10-calico.conf" "/etc/kubernetes/cni/net.d"
 
